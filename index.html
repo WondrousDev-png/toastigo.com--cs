@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coming Soon</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --butter: #FFDE59;
+            --purple: #6C4F98;
+            --purple-dark: #4A346B;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--butter);
+            color: var(--purple);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* =========================================
+           HEAVY BUBBLE BACKGROUND (10 CIRCLES)
+           ========================================= */
+        .circle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.45);
+            border-radius: 50%;
+            z-index: 1;
+            animation: float 10s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+        
+        .c1 { width: 100px; height: 100px; top: 5%; left: 5%; animation-duration: 7s; }
+        .c2 { width: 220px; height: 220px; bottom: -40px; right: -30px; animation-duration: 12s; }
+        .c3 { width: 60px; height: 60px; top: 30%; left: 80%; animation-duration: 9s; }
+        .c4 { width: 140px; height: 140px; bottom: 10%; left: -20px; animation-duration: 15s; }
+        .c5 { width: 50px; height: 50px; top: 15%; right: 15%; animation-duration: 6s; }
+        .c6 { width: 90px; height: 90px; top: 60%; left: 15%; animation-duration: 11s; }
+        .c7 { width: 130px; height: 130px; top: 50%; right: 40%; animation-duration: 13s; }
+        .c8 { width: 40px; height: 40px; bottom: 40%; left: 50%; animation-duration: 8s; }
+        .c9 { width: 110px; height: 110px; top: -20px; left: 45%; animation-duration: 10s; }
+        .c10 { width: 75px; height: 75px; bottom: 15%; right: 25%; animation-duration: 14s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(35px, 45px) scale(1.1); }
+        }
+
+        /* =========================================
+           THE CARD
+           ========================================= */
+        .card {
+            background: var(--white);
+            width: 100%;
+            max-width: 550px;
+            padding: 45px 15px;
+            border-radius: 40px;
+            border: 6px solid var(--purple);
+            box-shadow: 0 12px 0 var(--purple-dark);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(2.2rem, 10vw, 3.8rem);
+            margin-bottom: 30px;
+            line-height: 0.9;
+            transform: rotate(-1deg);
+        }
+
+        /* =========================================
+           BOUNCING TIMER GRID
+           ========================================= */
+        .timer-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+        }
+
+        .box {
+            background: #fdfaf0;
+            padding: 15px 2px;
+            border-radius: 18px;
+            border: 3px solid var(--purple);
+            overflow: hidden;
+        }
+
+        .num {
+            display: block;
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(1.2rem, 4.5vw, 2.4rem);
+            line-height: 1;
+            color: var(--purple-dark);
+            transition: transform 0.1s ease-out;
+        }
+
+        /* The Bounce Animation Class */
+        .bounce {
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); color: var(--purple); }
+            100% { transform: scale(1); }
+        }
+
+        #ms {
+            font-size: clamp(1rem, 3.5vw, 1.8rem);
+            color: var(--purple);
+            opacity: 0.7;
+        }
+
+        .label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+            color: var(--purple);
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 35px 10px; }
+            .timer-grid { gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="circle c1"></div><div class="circle c2"></div>
+    <div class="circle c3"></div><div class="circle c4"></div>
+    <div class="circle c5"></div><div class="circle c6"></div>
+    <div class="circle c7"></div><div class="circle c8"></div>
+    <div class="circle c9"></div><div class="circle c10"></div>
+
+    <div class="card">
+        <h1>Churning <br>Soon</h1>
+        
+        <div class="timer-grid">
+            <div class="box"><span class="num" id="days">--</span><span class="label">Days</span></div>
+            <div class="box"><span class="num" id="hours">--</span><span class="label">Hrs</span></div>
+            <div class="box"><span class="num" id="mins">--</span><span class="label">Mins</span></div>
+            <div class="box"><span class="num" id="secs">--</span><span class="label">Secs</span></div>
+            <div class="box"><span class="num" id="ms">--</span><span class="label">Ms</span></div>
+        </div>
+    </div>
+
+    <script>
+        // TARGET DATE
+        const TARGET = new Date("2026-06-01T00:00:00").getTime();
+
+        // Elements to track for bounce
+        const els = {
+            days: document.getElementById("days"),
+            hours: document.getElementById("hours"),
+            mins: document.getElementById("mins"),
+            secs: document.getElementById("secs"),
+            ms: document.getElementById("ms")
+        };
+
+        let lastVals = { days: "", hours: "", mins: "", secs: "" };
+
+        function update() {
+            const now = new Date().getTime();
+            const diff = TARGET - now;
+
+            if (diff <= 0) {
+                Object.values(els).forEach(el => el.innerText = "00");
+                return;
+            }
+
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            const ms = Math.floor((diff % 1000) / 10);
+
+            const currentVals = {
+                days: String(d).padStart(2, '0'),
+                hours: String(h).padStart(2, '0'),
+                mins: String(m).padStart(2, '0'),
+                secs: String(s).padStart(2, '0'),
+                ms: String(ms).padStart(2, '0')
+            };
+
+            // Trigger bounce animation if value changed
+            for (let key in lastVals) {
+                if (currentVals[key] !== lastVals[key]) {
+                    els[key].innerText = currentVals[key];
+                    els[key].classList.remove('bounce');
+                    void els[key].offsetWidth; // Trigger reflow to restart animation
+                    els[key].classList.add('bounce');
+                    lastVals[key] = currentVals[key];
+                }
+            }
+            
+            // MS updates too fast to bounce every time, just update text
+            els.ms.innerText = currentVals.ms;
+
+            requestAnimationFrame(update);
+        }
+
+        requestAnimationFrame(update);
+    </script>
+</body>
+</html>
