@@ -25,7 +25,7 @@ const Order = () => {
   // State for Quantity, Custom Text, and Success Notification
   const [quantity, setQuantity] = useState(1);
   const [customText, setCustomText] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false); // New state for custom popup
+  const [showSuccess, setShowSuccess] = useState(false);
   
   // Initialize with the first available color
   const [selectedColorId, setSelectedColorId] = useState(() => {
@@ -73,23 +73,20 @@ const Order = () => {
   // --- HANDLE ADD TO CART ---
   const handleAddToCart = () => {
     const itemToAdd = {
-      // Create a unique ID based on properties so duplicates can be handled or stacked
       id: `${selectedColorId}-${customText}-${Date.now()}`,
       name: VALENTINE_MODE ? "Love Batch" : "Toastigo One",
       variantName: currentOption.name,
-      price: currentPrice, // Unit Price
+      price: currentPrice,
       color: currentOption.hex,
       text: customText,
-      quantity: quantity,  // The vital quantity field
-      totalPrice: (currentPrice * quantity).toFixed(2) // Helper field if your cart needs pre-calc
+      quantity: quantity,
+      totalPrice: (currentPrice * quantity).toFixed(2)
     };
 
     addToCart(itemToAdd);
     
-    // Show custom success message instead of window.alert
     setShowSuccess(true);
     
-    // Reset form after a brief delay
     setTimeout(() => {
       setShowSuccess(false);
       setQuantity(1);
@@ -106,15 +103,16 @@ const Order = () => {
   const tempF = Math.round((printer.temp * 9/5) + 32);
 
   return (
-    <div className={`min-h-screen ${THEME.bg} ${THEME.text} font-sans p-6 md:p-12 transition-colors duration-500`}>
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-start pt-10 pb-20">
+    <div className={`min-h-screen ${THEME.bg} ${THEME.text} font-sans p-4 md:p-12 transition-colors duration-500`}>
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start pt-6 md:pt-10 pb-20">
         
         {/* LEFT COLUMN: Visuals & Status */}
-        <div className="sticky top-24 space-y-6">
+        {/* Changed to md:sticky to prevent sticky behavior on mobile where it blocks content */}
+        <div className="md:sticky md:top-24 space-y-6">
           
           <motion.div 
             layoutId="product-card"
-            className={`relative w-full aspect-square bg-white rounded-[3rem] border-4 ${THEME.border} shadow-2xl p-10 flex flex-col items-center justify-center overflow-hidden`}
+            className={`relative w-full aspect-square bg-white rounded-[2rem] md:rounded-[3rem] border-4 ${THEME.border} shadow-2xl p-6 md:p-10 flex flex-col items-center justify-center overflow-hidden`}
           >
             {/* 🍞 3D BREAD SVG */}
             <motion.div
@@ -123,7 +121,8 @@ const Order = () => {
                 scale: printer.state === "RUNNING" ? [1, 1.02, 1] : 1
               }}
               transition={{ repeat: Infinity, duration: 1 }}
-              className="relative w-80 h-80 flex items-center justify-center"
+              // Changed w-80 to w-full max-w to fit mobile screens without overflow
+              className="relative w-full max-w-[16rem] md:max-w-[20rem] aspect-square flex items-center justify-center"
             >
               <svg 
                 viewBox="0 0 120 120" 
@@ -180,8 +179,8 @@ const Order = () => {
               )}
             </AnimatePresence>
 
-            <h3 className="text-4xl font-black mt-4 mb-2 text-center tracking-tight">{VALENTINE_MODE ? "Love Batch" : "Toastigo One"}</h3>
-            <p className="font-bold opacity-50 uppercase tracking-widest text-sm">
+            <h3 className="text-3xl md:text-4xl font-black mt-4 mb-2 text-center tracking-tight">{VALENTINE_MODE ? "Love Batch" : "Toastigo One"}</h3>
+            <p className="font-bold opacity-50 uppercase tracking-widest text-xs md:text-sm">
               {currentOption.name}
             </p>
 
@@ -191,7 +190,7 @@ const Order = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className={`mt-4 px-4 py-2 rounded-lg border-2 ${THEME.border} bg-gray-50 font-mono text-sm uppercase`}
+                  className={`mt-4 px-4 py-2 rounded-lg border-2 ${THEME.border} bg-gray-50 font-mono text-sm uppercase break-all text-center max-w-full`}
                 >
                   "{customText}"
                 </motion.div>
@@ -200,11 +199,11 @@ const Order = () => {
           </motion.div>
 
           {/* REAL LIVE STATUS WIDGET */}
-          <div className={`bg-white/40 backdrop-blur-md rounded-[2.5rem] border-2 ${THEME.border} p-6 overflow-hidden`}>
+          <div className={`bg-white/40 backdrop-blur-md rounded-[2.5rem] border-2 ${THEME.border} p-5 md:p-6 overflow-hidden`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Wifi size={20} className={printer.online ? "text-green-600" : "text-red-500 animate-pulse"} />
-                <span className="font-bold text-sm uppercase opacity-70">
+                <span className="font-bold text-xs md:text-sm uppercase opacity-70">
                   {printer.online ? "P1S LIVE FEED" : "SEARCHING..."}
                 </span>
               </div>
@@ -215,18 +214,18 @@ const Order = () => {
                 </span>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
               <div className="bg-white/60 p-3 rounded-2xl border border-black/5 flex items-center gap-3">
                 <Thermometer className="opacity-50" />
                 <div>
-                  <div className="text-xs font-bold opacity-50">NOZZLE</div>
-                  <div className="font-mono font-bold text-xl">{printer.online ? `${tempF}°F` : "--"}</div>
+                  <div className="text-[10px] md:text-xs font-bold opacity-50">NOZZLE</div>
+                  <div className="font-mono font-bold text-lg md:text-xl">{printer.online ? `${tempF}°F` : "--"}</div>
                 </div>
               </div>
               <div className="bg-white/60 p-3 rounded-2xl border border-black/5 flex items-center gap-3">
                 <Activity className="opacity-50" />
-                <div>
-                  <div className="text-xs font-bold opacity-50">STATUS</div>
+                <div className="min-w-0">
+                  <div className="text-[10px] md:text-xs font-bold opacity-50">STATUS</div>
                   <div className="font-mono font-bold text-sm truncate uppercase">{printer.state || "OFFLINE"}</div>
                 </div>
               </div>
@@ -253,23 +252,23 @@ const Order = () => {
         <motion.div 
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
-          className="space-y-10 md:pl-8"
+          className="space-y-8 md:space-y-10 md:pl-8"
         >
           <div>
-            <h1 className="text-6xl font-black mb-2 tracking-tighter">Configure.</h1>
-            <p className="text-xl font-bold opacity-70">Build your perfect Toastigo.</p>
+            <h1 className="text-4xl md:text-6xl font-black mb-2 tracking-tighter">Configure.</h1>
+            <p className="text-lg md:text-xl font-bold opacity-70">Build your perfect Toastigo.</p>
           </div>
 
           <div className="space-y-4">
             <label className="font-black text-sm uppercase opacity-60">Select Finish</label>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3 md:gap-4">
               {PRODUCT_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
                   onClick={() => handleColorSelect(opt)}
                   disabled={opt.outOfStock}
                   className={`
-                    group relative w-16 h-16 rounded-2xl border-4 transition-all duration-200
+                    group relative w-14 h-14 md:w-16 md:h-16 rounded-2xl border-4 transition-all duration-200
                     ring-4 ring-white/30
                     ${opt.outOfStock ? "opacity-40 cursor-not-allowed grayscale border-gray-300" : "cursor-pointer hover:scale-105 active:scale-95"}
                     ${selectedColorId === opt.id ? `${THEME.border} scale-110 shadow-xl opacity-100` : "border-white/50"}
@@ -284,8 +283,8 @@ const Order = () => {
                   )}
                   {opt.outOfStock && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                       <X size={24} className="text-gray-500 opacity-80" />
-                       <span className="absolute -bottom-6 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap">Sold Out</span>
+                        <X size={20} className="text-gray-500 opacity-80" />
+                        <span className="absolute -bottom-6 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap">Sold Out</span>
                     </div>
                   )}
                 </button>
@@ -303,25 +302,25 @@ const Order = () => {
               value={customText}
               onChange={(e) => setCustomText(e.target.value)}
               placeholder="YOUR TEXT HERE"
-              className={`w-full p-6 text-xl font-bold rounded-2xl border-4 outline-none transition-all placeholder:opacity-30 ${THEME.input} ${THEME.border}`}
+              className={`w-full p-4 md:p-6 text-lg md:text-xl font-bold rounded-2xl border-4 outline-none transition-all placeholder:opacity-30 ${THEME.input} ${THEME.border}`}
             />
             <p className="text-xs font-bold opacity-40 text-right">{customText.length}/15 CHARS</p>
           </div>
 
-          <div className={`p-6 rounded-[2.5rem] bg-white/40 border-2 ${THEME.border} flex flex-col gap-6`}>
+          <div className={`p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] bg-white/40 border-2 ${THEME.border} flex flex-col gap-6`}>
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4 bg-white rounded-xl p-2 border-2 border-black/5">
+              <div className="flex items-center gap-2 md:gap-4 bg-white rounded-xl p-2 border-2 border-black/5">
                 {/* QUANTITY BUTTONS */}
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Minus size={20}/></button>
-                <span className="text-2xl font-black w-8 text-center">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Plus size={20}/></button>
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Minus size={18} md:size={20}/></button>
+                <span className="text-xl md:text-2xl font-black w-6 md:w-8 text-center">{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Plus size={18} md:size={20}/></button>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-black">
+                <div className="text-2xl md:text-3xl font-black">
                     <span className="text-lg opacity-50 mr-1">$</span>
                     {(currentPrice * quantity).toFixed(2)}
                 </div>
-                <div className="text-xs font-bold opacity-50 uppercase">
+                <div className="text-[10px] md:text-xs font-bold opacity-50 uppercase">
                     {quantity > 1 ? `$${currentPrice} each` : currentOption.name}
                 </div>
               </div>
@@ -329,14 +328,14 @@ const Order = () => {
 
             <button 
               onClick={handleAddToCart}
-              className={`w-full py-5 rounded-2xl font-bold text-xl text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 ${THEME.accent} hover:brightness-110`}
+              className={`w-full py-4 md:py-5 rounded-2xl font-bold text-lg md:text-xl text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 ${THEME.accent} hover:brightness-110`}
             >
               <ShoppingBag className="fill-white/20" />
               {VALENTINE_MODE ? "Add Love to Cart" : "Add to Cart"}
             </button>
           </div>
 
-          <div className="flex gap-4 opacity-60">
+          <div className="flex flex-col sm:flex-row gap-4 opacity-60">
               <div className="flex items-center gap-2 text-xs font-bold">
                 <Zap size={14} /> Fast Shipping
               </div>
