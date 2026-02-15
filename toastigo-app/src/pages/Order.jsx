@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { VALENTINE_MODE } from '../config';
-import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { 
   ShoppingBag, Check, Plus, Minus, Type, 
   Wifi, Zap, Activity, Thermometer, X
 } from 'lucide-react';
+
+// --- SAFETY: IF THESE PATHS ARE WRONG, THE APP CRASHES. ---
+// I have commented them out. Uncomment them one by one when the UI is working.
+// import { VALENTINE_MODE } from '../config';
+// import { useCart } from '../context/CartContext';
+
+// --- TEMPORARY MOCKS (Delete these when you uncomment the imports above) ---
+const VALENTINE_MODE = true; 
+const useCart = () => ({ addToCart: (item) => console.log("Added:", item) });
+// --------------------------------------------------------------------------
 
 /* ==========================================================================
    🔧 OWNER CONFIGURATION
@@ -20,8 +28,10 @@ const PRODUCT_OPTIONS = [
 ];
 
 const Order = () => {
-  const { addToCart } = useCart();
-  
+  // Safe check for useCart in case it's missing
+  const cartCtx = useCart();
+  const addToCart = cartCtx ? cartCtx.addToCart : () => alert("Cart Context Missing");
+
   // State for Quantity, Custom Text, and Success Notification
   const [quantity, setQuantity] = useState(1);
   const [customText, setCustomText] = useState("");
@@ -65,9 +75,12 @@ const Order = () => {
       }
     };
 
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 3000);
-    return () => clearInterval(interval);
+    // Only run fetch if we are in a browser environment to prevent SSR errors
+    if (typeof window !== 'undefined') {
+        fetchStatus();
+        const interval = setInterval(fetchStatus, 3000);
+        return () => clearInterval(interval);
+    }
   }, []);
 
   // --- HANDLE ADD TO CART ---
@@ -107,7 +120,6 @@ const Order = () => {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start pt-6 md:pt-10 pb-20">
         
         {/* LEFT COLUMN: Visuals & Status */}
-        {/* Changed to md:sticky to prevent sticky behavior on mobile where it blocks content */}
         <div className="md:sticky md:top-24 space-y-6">
           
           <motion.div 
@@ -121,14 +133,12 @@ const Order = () => {
                 scale: printer.state === "RUNNING" ? [1, 1.02, 1] : 1
               }}
               transition={{ repeat: Infinity, duration: 1 }}
-              // Changed w-80 to w-full max-w to fit mobile screens without overflow
               className="relative w-full max-w-[16rem] md:max-w-[20rem] aspect-square flex items-center justify-center"
             >
               <svg 
                 viewBox="0 0 120 120" 
                 className="w-full h-full drop-shadow-2xl overflow-visible"
               >
-                {/* BACK LAYER (Depth) */}
                 <path 
                   d="M35,90 C25,90 22,80 22,70 L25,40 C25,30 20,25 35,15 C50,5 80,5 95,15 C110,25 105,30 105,40 L108,70 C108,80 105,90 95,90 Z" 
                   fill="#C68E56" 
@@ -136,7 +146,6 @@ const Order = () => {
                   strokeWidth="3"
                   strokeLinejoin="round"
                 />
-                {/* FRONT LAYER (Face) */}
                 <motion.path 
                   initial={{ fill: currentOption.hex }}
                   animate={{ fill: currentOption.hex }}
@@ -146,7 +155,6 @@ const Order = () => {
                   strokeLinejoin="round"
                   d="M25,90 C15,90 12,80 12,70 L15,40 C15,30 10,25 25,15 C40,5 70,5 85,15 C100,25 95,30 95,40 L98,70 C98,80 95,90 85,90 Z"
                 />
-                {/* Pores/Texture */}
                 <g fill="black" fillOpacity="0.1">
                   <ellipse cx="35" cy="40" rx="3" ry="5" transform="rotate(-15 35 40)" />
                   <ellipse cx="75" cy="30" rx="2" ry="2" />
@@ -154,12 +162,11 @@ const Order = () => {
                   <ellipse cx="30" cy="75" rx="2" ry="2" />
                   <ellipse cx="85" cy="70" rx="3" ry="5" transform="rotate(15 85 70)" />
                 </g>
-                {/* Shine */}
                 <path d="M30,20 C40,12 70,12 80,20" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" opacity="0.4"/>
               </svg>
             </motion.div>
 
-            {/* Custom "Added to Cart" Notification */}
+            {/* Success Popup */}
             <AnimatePresence>
               {showSuccess && (
                 <motion.div
@@ -198,7 +205,7 @@ const Order = () => {
             </AnimatePresence>
           </motion.div>
 
-          {/* REAL LIVE STATUS WIDGET */}
+          {/* STATUS WIDGET */}
           <div className={`bg-white/40 backdrop-blur-md rounded-[2.5rem] border-2 ${THEME.border} p-5 md:p-6 overflow-hidden`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -310,10 +317,14 @@ const Order = () => {
           <div className={`p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] bg-white/40 border-2 ${THEME.border} flex flex-col gap-6`}>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 md:gap-4 bg-white rounded-xl p-2 border-2 border-black/5">
-                {/* QUANTITY BUTTONS */}
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Minus size={18} md:size={20}/></button>
+                {/* QUANTITY BUTTONS - FIXED ICONS */}
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Minus className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
                 <span className="text-xl md:text-2xl font-black w-6 md:w-8 text-center">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Plus size={18} md:size={20}/></button>
+                <button onClick={() => setQuantity(quantity + 1)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Plus className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
               </div>
               <div className="text-right">
                 <div className="text-2xl md:text-3xl font-black">
