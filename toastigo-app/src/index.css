@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Keep your custom font import */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+
+@theme {
+  /* This helps v4 recognize the font family from the JS config if needed */
+  --font-sans: 'Fredoka', sans-serif; 
+}
+
+body {
+  background-color: #FDE668; /* Fallback if config misses */
+  font-family: 'Fredoka', sans-serif;
+}
