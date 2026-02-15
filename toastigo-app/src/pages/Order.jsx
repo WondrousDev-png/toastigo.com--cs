@@ -16,7 +16,7 @@ const PRODUCT_OPTIONS = [
   { id: 'dark',   name: 'Burnt Black',   hex: '#333333', price: 2.45, outOfStock: false }, 
   { id: 'pink',   name: 'Royal Pink',  hex: '#f95178', price: 3.05, outOfStock: true },
   { id: 'white',  name: 'Institutional White',    hex: '#ffffff', price: 2.45, outOfStock: false },
-  { id: 'blue',   name: 'Royal Blue',       hex: '#11a9f5', price: 3, outOfStock: true },
+  { id: 'blue',   name: 'Royal Blue',       hex: '#11a9f5', price: 3.05, outOfStock: true },
 ];
 
 const Order = () => {
@@ -25,7 +25,7 @@ const Order = () => {
   // State for Quantity, Custom Text, and Success Notification
   const [quantity, setQuantity] = useState(1);
   const [customText, setCustomText] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false); 
+  const [showSuccess, setShowSuccess] = useState(false); // New state for custom popup
   
   // Initialize with the first available color
   const [selectedColorId, setSelectedColorId] = useState(() => {
@@ -73,19 +73,23 @@ const Order = () => {
   // --- HANDLE ADD TO CART ---
   const handleAddToCart = () => {
     const itemToAdd = {
+      // Create a unique ID based on properties so duplicates can be handled or stacked
       id: `${selectedColorId}-${customText}-${Date.now()}`,
       name: VALENTINE_MODE ? "Love Batch" : "Toastigo One",
       variantName: currentOption.name,
-      price: currentPrice,
+      price: currentPrice, // Unit Price
       color: currentOption.hex,
       text: customText,
-      quantity: quantity, 
-      totalPrice: (currentPrice * quantity).toFixed(2)
+      quantity: quantity,  // The vital quantity field
+      totalPrice: (currentPrice * quantity).toFixed(2) // Helper field if your cart needs pre-calc
     };
 
     addToCart(itemToAdd);
+    
+    // Show custom success message instead of window.alert
     setShowSuccess(true);
     
+    // Reset form after a brief delay
     setTimeout(() => {
       setShowSuccess(false);
       setQuantity(1);
@@ -102,21 +106,15 @@ const Order = () => {
   const tempF = Math.round((printer.temp * 9/5) + 32);
 
   return (
-    <div className={`min-h-screen ${THEME.bg} ${THEME.text} font-sans p-4 md:p-12 transition-colors duration-500`}>
-      {/* MOBILE FIX: 
-          - Changed padding (p-4 mobile, p-12 desktop)
-          - Grid is 1 column on mobile, 2 on desktop 
-      */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start pt-4 md:pt-10 pb-20">
+    <div className={`min-h-screen ${THEME.bg} ${THEME.text} font-sans p-6 md:p-12 transition-colors duration-500`}>
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-start pt-10 pb-20">
         
-        {/* LEFT COLUMN: Visuals & Status 
-            MOBILE FIX: Removed 'sticky' on mobile so it scrolls naturally. Kept 'md:sticky' for desktop.
-        */}
-        <div className="relative md:sticky md:top-24 space-y-6 order-1">
+        {/* LEFT COLUMN: Visuals & Status */}
+        <div className="sticky top-24 space-y-6">
           
           <motion.div 
             layoutId="product-card"
-            className={`relative w-full bg-white rounded-[2rem] md:rounded-[3rem] border-4 ${THEME.border} shadow-2xl p-6 md:p-10 flex flex-col items-center justify-center overflow-hidden`}
+            className={`relative w-full aspect-square bg-white rounded-[3rem] border-4 ${THEME.border} shadow-2xl p-10 flex flex-col items-center justify-center overflow-hidden`}
           >
             {/* 🍞 3D BREAD SVG */}
             <motion.div
@@ -125,11 +123,7 @@ const Order = () => {
                 scale: printer.state === "RUNNING" ? [1, 1.02, 1] : 1
               }}
               transition={{ repeat: Infinity, duration: 1 }}
-              /* MOBILE FIX: 
-                 - Replaced fixed w-64 with responsive width (w-full max-w-[...])
-                 - Ensures it doesn't break on small screens (iPhone SE etc)
-              */
-              className="relative w-full max-w-[260px] md:max-w-[320px] aspect-square flex items-center justify-center"
+              className="relative w-80 h-80 flex items-center justify-center"
             >
               <svg 
                 viewBox="0 0 120 120" 
@@ -173,12 +167,12 @@ const Order = () => {
                   initial={{ opacity: 0, scale: 0.5, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.5 }}
-                  className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-[2rem] md:rounded-[3rem]"
+                  className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm"
                 >
-                  <div className={`p-6 rounded-3xl ${THEME.bg} border-4 ${THEME.border} shadow-2xl flex flex-col items-center mx-4`}>
+                  <div className={`p-6 rounded-3xl ${THEME.bg} border-4 ${THEME.border} shadow-2xl flex flex-col items-center`}>
                     <Check size={48} className={THEME.text} strokeWidth={4} />
                     <h3 className="text-2xl font-black mt-2 uppercase">Added!</h3>
-                    <p className="font-bold opacity-60 text-sm whitespace-nowrap">
+                    <p className="font-bold opacity-60 text-sm">
                       {quantity} x {currentOption.name}
                     </p>
                   </div>
@@ -186,9 +180,8 @@ const Order = () => {
               )}
             </AnimatePresence>
 
-            {/* Title & Preview */}
-            <h3 className="text-3xl md:text-4xl font-black mt-4 mb-2 text-center tracking-tight leading-none">{VALENTINE_MODE ? "Love Batch" : "Toastigo One"}</h3>
-            <p className="font-bold opacity-50 uppercase tracking-widest text-xs md:text-sm text-center">
+            <h3 className="text-4xl font-black mt-4 mb-2 text-center tracking-tight">{VALENTINE_MODE ? "Love Batch" : "Toastigo One"}</h3>
+            <p className="font-bold opacity-50 uppercase tracking-widest text-sm">
               {currentOption.name}
             </p>
 
@@ -198,7 +191,7 @@ const Order = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className={`mt-4 px-4 py-2 rounded-lg border-2 ${THEME.border} bg-gray-50 font-mono text-sm uppercase break-all text-center max-w-full`}
+                  className={`mt-4 px-4 py-2 rounded-lg border-2 ${THEME.border} bg-gray-50 font-mono text-sm uppercase`}
                 >
                   "{customText}"
                 </motion.div>
@@ -207,11 +200,11 @@ const Order = () => {
           </motion.div>
 
           {/* REAL LIVE STATUS WIDGET */}
-          <div className={`bg-white/40 backdrop-blur-md rounded-[2.5rem] border-2 ${THEME.border} p-5 md:p-6 overflow-hidden`}>
+          <div className={`bg-white/40 backdrop-blur-md rounded-[2.5rem] border-2 ${THEME.border} p-6 overflow-hidden`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Wifi size={18} className={printer.online ? "text-green-600" : "text-red-500 animate-pulse"} />
-                <span className="font-bold text-xs md:text-sm uppercase opacity-70">
+                <Wifi size={20} className={printer.online ? "text-green-600" : "text-red-500 animate-pulse"} />
+                <span className="font-bold text-sm uppercase opacity-70">
                   {printer.online ? "P1S LIVE FEED" : "SEARCHING..."}
                 </span>
               </div>
@@ -222,19 +215,19 @@ const Order = () => {
                 </span>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="bg-white/60 p-3 rounded-2xl border border-black/5 flex items-center gap-3">
-                <Thermometer className="opacity-50 shrink-0 w-5 h-5" />
-                <div className="min-w-0">
-                  <div className="text-[10px] font-bold opacity-50">NOZZLE</div>
-                  <div className="font-mono font-bold text-base md:text-xl truncate">{printer.online ? `${tempF}°F` : "--"}</div>
+                <Thermometer className="opacity-50" />
+                <div>
+                  <div className="text-xs font-bold opacity-50">NOZZLE</div>
+                  <div className="font-mono font-bold text-xl">{printer.online ? `${tempF}°F` : "--"}</div>
                 </div>
               </div>
               <div className="bg-white/60 p-3 rounded-2xl border border-black/5 flex items-center gap-3">
-                <Activity className="opacity-50 shrink-0 w-5 h-5" />
-                <div className="min-w-0">
-                  <div className="text-[10px] font-bold opacity-50">STATUS</div>
-                  <div className="font-mono font-bold text-xs md:text-sm truncate uppercase">{printer.state || "OFFLINE"}</div>
+                <Activity className="opacity-50" />
+                <div>
+                  <div className="text-xs font-bold opacity-50">STATUS</div>
+                  <div className="font-mono font-bold text-sm truncate uppercase">{printer.state || "OFFLINE"}</div>
                 </div>
               </div>
             </div>
@@ -256,26 +249,20 @@ const Order = () => {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Configurator Form 
-            MOBILE FIX: Order-2 ensures it sits below the image on mobile
-        */}
+        {/* RIGHT COLUMN: Configurator Form */}
         <motion.div 
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
-          className="space-y-8 md:space-y-10 md:pl-8 order-2"
+          className="space-y-10 md:pl-8"
         >
           <div>
-            {/* MOBILE FIX: Smaller heading on mobile to prevent wrapping issues */}
-            <h1 className="text-5xl md:text-6xl font-black mb-2 tracking-tighter">Configure.</h1>
-            <p className="text-lg md:text-xl font-bold opacity-70">Build your perfect Toastigo.</p>
+            <h1 className="text-6xl font-black mb-2 tracking-tighter">Configure.</h1>
+            <p className="text-xl font-bold opacity-70">Build your perfect Toastigo.</p>
           </div>
 
           <div className="space-y-4">
             <label className="font-black text-sm uppercase opacity-60">Select Finish</label>
-            {/* MOBILE FIX: 
-                - gap-y-8: Adds vertical space so the "Sold Out" labels don't overlap the next row 
-            */}
-            <div className="flex flex-wrap gap-4 gap-y-8">
+            <div className="flex flex-wrap gap-4">
               {PRODUCT_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
@@ -298,7 +285,7 @@ const Order = () => {
                   {opt.outOfStock && (
                     <div className="absolute inset-0 flex items-center justify-center">
                        <X size={24} className="text-gray-500 opacity-80" />
-                       <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap bg-white/50 px-1 rounded">Sold Out</span>
+                       <span className="absolute -bottom-6 text-[10px] font-black uppercase text-gray-500 whitespace-nowrap">Sold Out</span>
                     </div>
                   )}
                 </button>
@@ -322,16 +309,14 @@ const Order = () => {
           </div>
 
           <div className={`p-6 rounded-[2.5rem] bg-white/40 border-2 ${THEME.border} flex flex-col gap-6`}>
-            {/* MOBILE FIX: 
-               - flex-wrap: Ensures price and quantity don't smash together on very small screens 
-            */}
-            <div className="flex flex-wrap justify-between items-center gap-4">
-              <div className="flex items-center gap-4 bg-white rounded-xl p-2 border-2 border-black/5 shadow-sm">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-4 bg-white rounded-xl p-2 border-2 border-black/5">
+                {/* QUANTITY BUTTONS */}
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Minus size={20}/></button>
                 <span className="text-2xl font-black w-8 text-center">{quantity}</span>
                 <button onClick={() => setQuantity(quantity + 1)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Plus size={20}/></button>
               </div>
-              <div className="text-right ml-auto">
+              <div className="text-right">
                 <div className="text-3xl font-black">
                     <span className="text-lg opacity-50 mr-1">$</span>
                     {(currentPrice * quantity).toFixed(2)}
@@ -351,7 +336,7 @@ const Order = () => {
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-4 opacity-60 pb-8">
+          <div className="flex gap-4 opacity-60">
               <div className="flex items-center gap-2 text-xs font-bold">
                 <Zap size={14} /> Fast Shipping
               </div>
