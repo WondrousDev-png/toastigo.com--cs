@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { VALENTINE_MODE } from '../config.js';
-import { useCart } from '../context/CartContext.jsx';
+import { VALENTINE_MODE } from '../config';
+import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { 
   ShoppingBag, Check, Plus, Minus, Type, 
