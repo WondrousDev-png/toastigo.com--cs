@@ -176,23 +176,22 @@ app.post('/api/gallery/delete', (req, res) => {
 });
 
 /* ======================================================
-   STATIC SERVING (THE IMPORTANT FIX)
+   STATIC SERVING (FIXED FOR SPA + API)
    ====================================================== */
-
 const distPath = join(__dirname, 'dist');
 
-// Serve assets FIRST (prevents MIME errors)
+// Serve assets first (prevents MIME errors)
 app.use('/assets', express.static(join(distPath, 'assets')));
 
 // Serve all static files
 app.use(express.static(distPath));
 
 // SPA fallback ONLY for non-API routes
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api')) return;
+app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(join(distPath, 'index.html'));
 });
 
+// --- START SERVER ---
 app.listen(PORT, () =>
   console.log(`🚀 Server running on port ${PORT}`)
 );
