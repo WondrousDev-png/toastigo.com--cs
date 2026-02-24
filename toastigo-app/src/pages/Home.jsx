@@ -239,7 +239,7 @@ const Home = () => {
         <OvenDashboard />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6">
           {[
-            { label: "Toastigo's Created", val: "19", icon: <Package /> },
+            { label: "Toastigo's Created", val: "25", icon: <Package /> },
             { label: "Next Color", val: "PINK", icon: <CheckCircle /> },
             { label: "Avg. Rating", val: "5/5", icon: <Star /> },
           ].map((stat, i) => (
