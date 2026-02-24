@@ -176,28 +176,33 @@ app.post('/api/gallery/delete', (req, res) => {
 });
 
 /* ======================================================
-   STATIC SERVING & SPA FALLBACK
+   STATIC SERVING (FIXED FOR SPA + API)
    ====================================================== */
 const distPath = join(__dirname, 'dist');
 
-// 1. Serve static files from the 'dist' directory
-app.use(express.static(distPath));
+// 1. Force explicitly correct headers for JS files
+app.use(express.static(distPath, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
 
-// 2. Handle unmatched routes
-app.get('*', (req, res) => {
-  // If the route starts with /api, return a 404 JSON response
+// 2. SPA fallback ONLY for non-API routes AND non-file requests
+app.get('*', (req, res, next) => {
+  // Ignore API requests
   if (req.path.startsWith('/api')) {
-    return res.status(404).json({ error: "API route not found" });
-  }
-  
-  // If the route has a file extension (e.g., .js, .css, .png), return a 404.
-  // This PREVENTS the "MIME type text/html" error by stopping Express 
-  // from serving index.html when a static asset is missing.
-  if (req.path.match(/\.[a-zA-Z0-9]+$/)) {
-    return res.status(404).send('File not found');
+    return next();
   }
 
-  // Otherwise, assume it's a frontend route and serve index.html
+  // If the request is for a file extension (.js, .css, etc.) and it got this far, 
+  // express.static didn't find it. Return a REAL 404 instead of index.html.
+  if (req.path.match(/\.[a-z0-9]+$/i)) {
+    return res.status(404).send(`Asset not found: ${req.path}`);
+  }
+
+  // Otherwise, serve the single page app index.html
   res.sendFile(join(distPath, 'index.html'));
 });
 
