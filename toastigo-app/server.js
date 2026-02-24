@@ -180,29 +180,14 @@ app.post('/api/gallery/delete', (req, res) => {
    ====================================================== */
 const distPath = join(__dirname, 'dist');
 
-// 1. Force explicitly correct headers for JS files
-app.use(express.static(distPath, {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
+// Serve assets first (prevents MIME errors)
+app.use('/assets', express.static(join(distPath, 'assets')));
 
-// 2. SPA fallback ONLY for non-API routes AND non-file requests
-app.get('*', (req, res, next) => {
-  // Ignore API requests
-  if (req.path.startsWith('/api')) {
-    return next();
-  }
+// Serve all static files
+app.use(express.static(distPath));
 
-  // If the request is for a file extension (.js, .css, etc.) and it got this far, 
-  // express.static didn't find it. Return a REAL 404 instead of index.html.
-  if (req.path.match(/\.[a-z0-9]+$/i)) {
-    return res.status(404).send(`Asset not found: ${req.path}`);
-  }
-
-  // Otherwise, serve the single page app index.html
+// SPA fallback ONLY for non-API routes
+app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(join(distPath, 'index.html'));
 });
 
