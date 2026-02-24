@@ -8,9 +8,9 @@ export default {
     extend: {
       colors: {
         toast: {
-          yellow: '#FDE668', 
-          purple: '#5A3E85',
-          white: '#FFFFFF',
+          yellow: '#0084ff', 
+          purple: '#5ec9ff',
+          white: '#2c2c2c',
         },
         val: {
           pink: '#FFC5D3',   // Soft Pink

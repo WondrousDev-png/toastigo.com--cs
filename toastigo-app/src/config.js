@@ -1,6 +1,6 @@
 // src/config.js
 
-export const VALENTINE_MODE = true; 
+export const VALENTINE_MODE = false; 
 
 // SET THIS TO FALSE TO SHUT DOWN CHECKOUT
 export const CHECKOUT_ENABLED = false; 

@@ -28,7 +28,7 @@ const THEME = VALENTINE_MODE ? {
   mode: 'valentine',
   bgGradient: "bg-gradient-to-br from-[#FFC5D3] via-[#FFD0E0] to-[#FFC5D3]",
   text: "text-[#8C0E38]",
-  accent: "text-[#D91C5C]",
+  accent: "text-[#8C0E38]",
   border: "border-[#8C0E38]",
   cardBg: "bg-white/90 backdrop-blur-md",
   button: "bg-[#D91C5C] hover:bg-[#8C0E38] text-white shadow-[4px_4px_0px_0px_#8C0E38]",
@@ -36,14 +36,14 @@ const THEME = VALENTINE_MODE ? {
   icon: <Heart className="w-full h-full fill-[#D91C5C] text-[#D91C5C] animate-pulse" />
 } : {
   mode: 'toast',
-  bgGradient: "bg-gradient-to-br from-[#FDE668] via-[#FDF0A0] to-[#FDE668]",
-  text: "text-[#5A3E85]",
-  accent: "text-[#7B5CAB]",
-  border: "border-[#5A3E85]",
-  cardBg: "bg-white/90 backdrop-blur-md",
-  button: "bg-[#5A3E85] hover:bg-[#3D2A5B] text-white shadow-[4px_4px_0px_0px_#5A3E85]",
-  highlight: "bg-[#FFF9D6]",
-  icon: <div className="w-full h-full rounded-full border-[8px] border-[#5A3E85] bg-white"></div>
+  bgGradient: "bg-gradient-to-br from-[#5ec9ff] via-[#99dfff] to-[#5ec9ff]",
+  text: "text-[#005fb9]",
+  accent: "text-[#005fb9]",
+  border: "border-[#005fb9]",
+  cardBg: "bg-white/80 backdrop-blur-md",
+  button: "bg-[#00aaff] hover:bg-[#004280] text-white shadow-[4px_4px_0px_0px_#005fb9]",
+  highlight: "bg-[#FFFF]",
+  icon: <div className="w-full h-full rounded-full border-[8px] border-[#005fb9] bg-white"></div>
 };
 
 /* --- ANIMATION VARIANTS --- */

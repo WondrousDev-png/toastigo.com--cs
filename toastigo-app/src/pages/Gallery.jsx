@@ -27,12 +27,12 @@ const Gallery = () => {
     badge: "bg-[#D91C5C] text-white",
     button: "bg-[#D91C5C] hover:bg-[#8C0E38] text-white"
   } : {
-    bg: "bg-[#FDE668]", 
-    text: "text-[#5A3E85]", 
-    border: "border-[#5A3E85]", 
+    bg: "bg-[#5ec9ff]", 
+    text: "text-[#005fb9]", 
+    border: "border-[#005fb9]", 
     cardBg: "bg-white", 
     badge: "bg-[#5A3E85] text-white",
-    button: "bg-[#5A3E85] hover:bg-[#3D2A5B] text-white"
+    button: "bg-[#00aaff] hover:bg-[#005fb9] text-white"
   };
 
   useEffect(() => {

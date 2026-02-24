@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const { cart, toggleCart } = useCart();
-  const theme = VALENTINE_MODE ? "text-[#8C0E38] border-[#8C0E38]" : "text-[#5A3E85] border-[#5A3E85]";
+  const theme = VALENTINE_MODE ? "text-[#8C0E38] border-[#8C0E38]" : "text-[#005fb9] border-[#005fb9]";
 
   // Calculate total quantity for the red badge
   const totalItems = cart ? cart.reduce((sum, item) => sum + (item.quantity || 1), 0) : 0;

@@ -48,8 +48,8 @@ const Order = () => {
     bg: "bg-[#FFC5D3]", text: "text-[#8C0E38]", accent: "bg-[#D91C5C]", border: "border-[#8C0E38]", stroke: "#8C0E38",
     input: "bg-white/50 border-[#D91C5C] focus:ring-[#D91C5C]",
   } : {
-    bg: "bg-[#FDE668]", text: "text-[#5A3E85]", accent: "bg-[#5A3E85]", border: "border-[#5A3E85]", stroke: "#5A3E85",
-    input: "bg-white/50 border-[#5A3E85] focus:ring-[#5A3E85]",
+    bg: "bg-[#5ec9ff]", text: "text-[#005fb9]", accent: "bg-[#00aaff]", border: "border-[#005fb9]", stroke: "#005fb9",
+    input: "bg-white/50 border-[#004280] focus:ring-[#004280]",
   };
 
   // --- LIVE DATA FETCHING ---
