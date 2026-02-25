@@ -240,7 +240,7 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6">
           {[
             { label: "Toastigo's Created", val: "25", icon: <Package /> },
-            { label: "Next Color", val: "PINK", icon: <CheckCircle /> },
+            { label: "Next Color", val: "ORANGE", icon: <CheckCircle /> },
             { label: "Avg. Rating", val: "5/5", icon: <Star /> },
           ].map((stat, i) => (
             <motion.div key={i} whileHover={{ y: -5 }} className={`bg-white/80 p-5 rounded-[2rem] border-2 ${THEME.border} flex items-center gap-4 shadow-sm`}>
