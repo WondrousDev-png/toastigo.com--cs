@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion'; 
+import toast, { Toaster } from 'react-hot-toast';
 import { 
-  Heart, ArrowRight, Upload, CheckCircle, Package, Activity, Star, Thermometer, ShoppingBag
+  Heart, ArrowRight, Upload, CheckCircle, Package, Activity, Star, Thermometer, ShoppingBag, Loader
 } from 'lucide-react';
 
 // --- CONFIG IMPORT ---
-// Defaults to true if config is missing to prevent crashes
 import { VALENTINE_MODE as CONFIG_MODE } from '../config';
 const VALENTINE_MODE = CONFIG_MODE !== undefined ? CONFIG_MODE : true;
 
@@ -86,7 +86,7 @@ const OvenDashboard = () => {
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
-        setStatus(data.online ? data : { ...data, state: "OFFLINE", temp: 0 });
+        setStatus(data.online ? data : { ...data, online: false, state: "OFFLINE", temp: 0 });
       } catch (e) {
         setStatus(prev => ({ ...prev, online: false, state: "CONNECTION ERROR" }));
       }
@@ -116,18 +116,15 @@ const OvenDashboard = () => {
               ) : <p className="font-bold text-sm text-gray-400">PRINTER OFFLINE</p>}
             </div>
           </div>
-          {/* Mobile Temp Badge */}
           <div className={`md:hidden px-3 py-1 rounded-lg border-2 ${THEME.border} bg-white font-bold text-sm flex items-center gap-1`}>
              <Thermometer size={14}/> {status.online ? `${tempF}°` : "--"}
           </div>
         </div>
-        {/* Desktop Temp Badge */}
         <div className={`hidden md:flex px-4 py-2 rounded-xl border-2 ${THEME.border} bg-white font-bold text-xl items-center gap-2 min-w-[120px] justify-center`}>
           <Thermometer size={18}/> {status.online ? `${tempF}°F` : "--"}
         </div>
       </div>
       
-      {/* Progress Bar */}
       <div className={`w-full h-8 md:h-12 border-4 ${THEME.border} rounded-full bg-white relative overflow-hidden shadow-inner`}>
         <motion.div initial={{ width: 0 }} animate={{ width: `${status.percent}%` }} transition={{ duration: 0.5 }} className={`h-full ${THEME.mode === 'valentine' ? 'bg-[#D91C5C]' : 'bg-[#5A3E85]'}`} />
         <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)] mix-blend-overlay"></div>
@@ -143,42 +140,96 @@ const OvenDashboard = () => {
 /* --- MAIN PAGE --- */
 const Home = () => {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState(null);
+  const [siteStats, setSiteStats] = useState({ amountCreated: "30", nextColor: "ORANGE" });
   const fileInputRef = useRef(null);
 
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
+  // Initial Fetch & Analytics Tracker
+  useEffect(() => {
+    // Analytics Tracker (Records 1 visit per session)
+    if (!sessionStorage.getItem('toastigo_visited')) {
+        fetch('/api/track', { method: 'POST' }).catch(() => {});
+        sessionStorage.setItem('toastigo_visited', 'true');
+    }
 
+    // Load Live Stats
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/stats');
+        if (res.ok) setSiteStats(await res.json());
+      } catch (e) {
+        console.error("Failed to load stats", e);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const handleUploadClick = () => fileInputRef.current.click();
+
+  // Compressed File Upload
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const newUpload = { image: reader.result, name: file.name };
-        try {
-            await fetch('/api/uploads', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newUpload)
-            });
-            setIsUploading(false);
-            setUploadStatus('success');
-            setTimeout(() => setUploadStatus(null), 3000);
-        } catch (error) {
-            console.error("Upload failed", error);
-            setIsUploading(false);
-            alert("Failed to upload. Image might be too large!");
+    if (!file) return;
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1080;
+        const MAX_HEIGHT = 1080;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+        } else {
+          if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
         }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        sendToServer({ image: compressedBase64, name: file.name });
       };
-      reader.readAsDataURL(file);
+      
+      img.onerror = () => {
+        toast.error("Invalid image format.");
+        setIsUploading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const sendToServer = async (newUpload) => {
+    try {
+        const res = await fetch('/api/uploads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newUpload)
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Server rejected upload");
+        
+        toast.success("Sent to the Oven for review!", { icon: '🍞' });
+    } catch (error) {
+        toast.error(error.message || "Upload failed.");
+    } finally {
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = ""; 
     }
   };
 
   return (
     <div className={`min-h-screen ${THEME.bgGradient} ${THEME.text} font-bubbly overflow-x-hidden selection:bg-white selection:text-[#D91C5C]`}>
       <FontStyles />
+      <Toaster position="bottom-center" />
       
       {/* Navbar */}
       <nav className={`flex justify-between items-center p-4 md:p-6 max-w-7xl mx-auto`}>
@@ -192,14 +243,11 @@ const Home = () => {
 
       {/* Hero Section */}
       <motion.div variants={containerVar} initial="hidden" animate="visible" className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-20 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-        
-        {/* Text Area */}
         <motion.div variants={itemVar} className="text-center lg:text-left z-10 flex flex-col items-center lg:items-start order-2 lg:order-1">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className={`inline-block mb-4 px-3 py-1 md:px-4 md:py-2 rounded-full bg-white border-2 ${THEME.border} font-bold text-xs md:text-sm uppercase tracking-wide shadow-sm`}>
             {VALENTINE_MODE ? "💘 Cupid Approved" : "✨ Limited Edition!"}
           </motion.div>
           
-          {/* Responsive Typography Fix */}
           <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black leading-[0.9] mb-6 md:mb-8 tracking-tighter drop-shadow-sm">
             {VALENTINE_MODE ? "LOVE." : "TOAST."} <br/>
             <span className="text-white text-stroke-thick relative inline-block">{VALENTINE_MODE ? "TOAST." : "LITERALLY."}</span>
@@ -216,7 +264,6 @@ const Home = () => {
           </div>
         </motion.div>
 
-        {/* Floating Product Image */}
         <motion.div variants={floatVar} animate="animate" className="relative order-1 lg:order-2 w-full max-w-sm mx-auto lg:max-w-full">
           <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] rounded-full blur-3xl opacity-40 bg-white`}></div>
           <motion.div whileHover={{ rotate: 5, scale: 1.05 }} className={`relative bg-white border-4 ${THEME.border} rounded-[2.5rem] p-4 md:p-6 shadow-2xl z-10 rotate-[-3deg] lg:rotate-[-6deg]`}>
@@ -239,8 +286,8 @@ const Home = () => {
         <OvenDashboard />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6">
           {[
-            { label: "Toastigo's Created", val: "30", icon: <Package /> },
-            { label: "Next Color", val: "ORANGE", icon: <CheckCircle /> },
+            { label: "Toastigo's Created", val: siteStats.amountCreated, icon: <Package /> },
+            { label: "Next Color", val: siteStats.nextColor, icon: <CheckCircle /> },
             { label: "Avg. Rating", val: "5/5", icon: <Star /> },
           ].map((stat, i) => (
             <motion.div key={i} whileHover={{ y: -5 }} className={`bg-white/80 p-5 rounded-[2rem] border-2 ${THEME.border} flex items-center gap-4 shadow-sm`}>
@@ -258,7 +305,6 @@ const Home = () => {
           <p className="text-lg md:text-xl font-bold opacity-70">Join the hall of fame. Upload your setup.</p>
         </div>
 
-        {/* Gallery Grid - Responsive Columns */}
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {IMAGE_CONFIG.gallery.map((imgSrc, index) => (
             <motion.div key={index} whileHover={{ scale: 1.05, rotate: (index % 2 === 0 ? 2 : -2) }} className={`aspect-square rounded-2xl md:rounded-[2rem] border-4 ${THEME.border} bg-white overflow-hidden relative group cursor-pointer shadow-lg`}>
@@ -269,21 +315,13 @@ const Home = () => {
         </div>
         
         <div className="text-center mt-12">
-          {/* Hidden File Input */}
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            className="hidden" 
-            accept="image/*"
-          />
-          
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
           <button 
             onClick={handleUploadClick}
             disabled={isUploading}
             className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold text-lg border-2 bg-white ${THEME.border} ${THEME.text} hover:scale-105 active:scale-95 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] inline-flex justify-center items-center gap-2`}
           >
-            {isUploading ? "Sending to Oven..." : uploadStatus === 'success' ? "Sent to Review!" : <><Upload size={20} /> Upload Your Photo</>}
+            {isUploading ? <><Loader size={20} className="animate-spin" /> Compressing...</> : <><Upload size={20} /> Upload Your Photo</>}
           </button>
         </div>
       </section>

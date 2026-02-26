@@ -1,0 +1,37 @@
+[
+  {
+    "id": "yellow",
+    "name": "New Yeller Yellow",
+    "hex": "#FDE668",
+    "price": 3.05,
+    "outOfStock": false
+  },
+  {
+    "id": "dark",
+    "name": "Burnt Black",
+    "hex": "#333333",
+    "price": 2.45,
+    "outOfStock": false
+  },
+  {
+    "id": "pink",
+    "name": "Royal Pink",
+    "hex": "#f95178",
+    "price": 3.05,
+    "outOfStock": false
+  },
+  {
+    "id": "white",
+    "name": "Institutional White",
+    "hex": "#ffffff",
+    "price": 2.45,
+    "outOfStock": false
+  },
+  {
+    "id": "1772061657054",
+    "name": "Royal Blue",
+    "hex": "#11a9f5",
+    "price": 3.05,
+    "outOfStock": false
+  }
+]

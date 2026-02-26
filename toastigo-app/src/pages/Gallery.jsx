@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Star, Upload, Loader } from 'lucide-react';
-import { VALENTINE_MODE } from '../config'; // Controlled strictly by your config file now
+import toast, { Toaster } from 'react-hot-toast'; // <-- NEW IMPORT
+import { VALENTINE_MODE } from '../config'; 
 
 // 1. OFFICIAL PINS 
-// NOTE: Ensure these are "Direct Links" (ending in .jpg/.png) to avoid pixelation!
 const OFFICIAL_PINS = [
   { id: 'off-1', img: "https://i.postimg.cc/FKFHD9SY/toastigopinkeiffel.webp", title: "Eiffel Tower", official: true },
   { id: 'off-2', img: "https://i.postimg.cc/NM1CFwN2/nano-banana-1771124827643.jpg", title: "Gaming Setup", official: true },
@@ -18,7 +18,7 @@ const Gallery = () => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  // --- THEME CONFIG (Strictly from your snippet) ---
+  // --- THEME CONFIG ---
   const THEME = VALENTINE_MODE ? {
     bg: "bg-[#FFC5D3]", 
     text: "text-[#8C0E38]", 
@@ -53,33 +53,86 @@ const Gallery = () => {
 
   const handleUploadClick = () => fileInputRef.current.click();
 
+  // --- NEW: Client-side Image Compression ---
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const newUpload = { image: reader.result, name: file.name };
-        try {
-            await fetch('/api/uploads', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newUpload)
-            });
-            alert("Photo sent to the Oven for review!");
-        } catch (error) {
-            alert("Upload failed. File might be too big.");
-        } finally {
-            setIsUploading(false);
+    if (!file) return;
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      
+      img.onload = () => {
+        // Create a canvas to resize the image
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1080;
+        const MAX_HEIGHT = 1080;
+        let width = img.width;
+        let height = img.height;
+
+        // Calculate new dimensions while keeping aspect ratio
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
         }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Compress to JPEG at 80% quality
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        
+        sendToServer({ image: compressedBase64, name: file.name });
       };
-      reader.readAsDataURL(file);
+      
+      img.onerror = () => {
+        toast.error("Invalid image file.");
+        setIsUploading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const sendToServer = async (newUpload) => {
+    try {
+        const res = await fetch('/api/uploads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newUpload)
+        });
+        
+        if (!res.ok) throw new Error("Server rejected upload");
+        
+        toast.success("Sent to the Oven for review!", {
+          icon: '🍞',
+          style: { borderRadius: '10px', background: '#333', color: '#fff' }
+        });
+    } catch (error) {
+        console.error("Upload Error:", error);
+        toast.error("Upload failed. Try a different image.");
+    } finally {
+        setIsUploading(false);
+        // Reset input so user can upload the same file again if it failed
+        if (fileInputRef.current) fileInputRef.current.value = ""; 
     }
   };
 
   return (
     <div className={`min-h-screen ${THEME.bg} ${THEME.text} font-sans p-4 md:p-12 transition-colors duration-500 flex flex-col`}>
-      
+      <Toaster position="bottom-center" reverseOrder={false} />
+
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-10 md:mb-16 text-center pt-8 relative w-full px-2">
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="inline-block mb-2">
@@ -88,7 +141,6 @@ const Gallery = () => {
             </span>
         </motion.div>
         
-        {/* Adjusted text size for mobile (text-5xl) vs desktop (text-8xl) */}
         <h1 className="text-5xl md:text-8xl font-black mb-6 tracking-tighter drop-shadow-sm leading-[0.9]">
           In The Wild.
         </h1>
@@ -110,12 +162,7 @@ const Gallery = () => {
         </div>
       </div>
 
-      {/* GRID LAYOUT (Mobile Supported)
-          - grid-cols-1: Mobile (1 column)
-          - sm:grid-cols-2: Large phones/Small Tablets (2 columns)
-          - lg:grid-cols-3: Laptops (3 columns)
-          - xl:grid-cols-4: Desktops (4 columns)
-      */}
+      {/* GRID LAYOUT */}
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
         {galleryItems.map((pin, index) => (
           <motion.div 
@@ -130,7 +177,7 @@ const Gallery = () => {
               flex flex-col
             `}
           >
-            {/* Image Container - 'aspect-square' keeps it perfectly even on all devices */}
+            {/* Image Container */}
             <div className="relative overflow-hidden aspect-square border-b-4 border-inherit">
                 <img 
                   src={pin.img || pin.image} 
